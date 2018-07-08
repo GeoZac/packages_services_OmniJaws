@@ -42,18 +42,32 @@ public class Config {
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(context);
 
-        if (prefs.getString(PREF_KEY_PROVIDER, "1").equals("0")) {
+        if (prefs.getString(PREF_KEY_PROVIDER, "0").equals("0")) {
             return new OpenWeatherMapProvider(context);
+        } else if (prefs.getString(PREF_KEY_PROVIDER, "0").equals("1")) {
+            return new YahooWeatherProvider(context);
+        } else {
+            return new WeatherUndergroundProvider(context);
         }
-        return new YahooWeatherProvider(context);
     }
 
     public static String getProviderId(Context context) {
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(context);
-
+        String providerService = null;
         String provider = prefs.getString(PREF_KEY_PROVIDER, "0");
-        return provider.equals("0") ? "OpenWeatherMap" : "Yahoo";
+        switch(provider) {
+            case "0":
+                providerService = "OpenWeatherMap";
+                break;
+            case "1":
+                providerService = "Yahoo";
+                break;
+            case "2":
+                providerService =  "Weather Underground";
+                break;
+        }
+        return providerService;
     }
 
     public static boolean isMetric(Context context) {

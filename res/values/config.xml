@@ -18,5 +18,6 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="owm_api_key" translatable="false" >bf2e711833265643fa9749dfbc9c2d54</string>
+  <string name="wug_api_key" translatable="false" >YOUR_WUG_API_KEY</string>
 
 </resources>
