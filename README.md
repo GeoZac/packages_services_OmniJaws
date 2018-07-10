@@ -24,8 +24,8 @@ http://api.wunderground.com/weather/api
 
 Very Important
 -----
-This repo doesnt have a WeatherUnderground API key included,so the make sure to get a API key and replace the dummy here
-https://github.com/GeoZac/packages_services_OmniJaws/blob/o8.1/res/values/config.xml
+This repo doesnt have a WeatherUnderground API key included,so the make sure to get a API key and replace the dummy [here](https://github.com/GeoZac/packages_services_OmniJaws/blob/27796ae0d1ce403fd648ec01cb5f0a7bc25baffa/src/org/omnirom/omnijaws/WeatherUndergroundProvider.java#L30)
+and [here](https://github.com/GeoZac/packages_services_OmniJaws/blob/27796ae0d1ce403fd648ec01cb5f0a7bc25baffa/res/values/config.xml#L21)
 
 The WeatherUnderground provider is entirely based on the already existing weather providers in orignial project
 
@@ -33,9 +33,7 @@ Current Status
 -----
 The mapping of condition to the conditionCode is fairly complete
 
-No multi-language support
-
-No support for imprial units
+No support for imperial units
 
 Thanks to the original creators and contributors of the LockClock app
 https://github.com/CyanogenMod/android_packages_apps_LockClock
