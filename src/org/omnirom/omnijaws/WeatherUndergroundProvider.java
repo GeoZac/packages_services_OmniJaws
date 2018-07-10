@@ -32,11 +32,11 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
 
 
     private static final String URL_LOCATION =
-            "http://api.wunderground.com/api/%s/geolookup/q/%s.json";
+            "http://api.wunderground.com/api/%s/lang:%s/geolookup/q/%s.json";
     private static final String URL_WEATHER =
-            "http://api.wunderground.com/api/%s/conditions%s.json";
+            "http://api.wunderground.com/api/%s/lang:%s/conditions%s.json";
     private static final String URL_FORECAST =
-            "http://api.wunderground.com/api/%s/forecast10day%s.json";
+            "http://api.wunderground.com/api/%s/lang:%s/forecast10day%s.json";
 
     public WeatherUndergroundProvider(Context context) {
         super(context);
@@ -45,7 +45,7 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     @Override
     public List<WeatherInfo.WeatherLocation> getLocations(String input) {
 
-        String url = String.format(URL_LOCATION,getAPIKey(), Uri.encode(input));
+        String url = String.format(URL_LOCATION,getAPIKey(),getLanguageCode(), Uri.encode(input));
         String response = retrieve(url);
         if (response == null) {
             return null;
@@ -98,14 +98,14 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
 
     private WeatherInfo handleWeatherRequest(String selection, boolean metric) {
         String units = metric ? "metric" : "imperial";
-        String conditionUrl = String.format(Locale.US, URL_WEATHER,getAPIKey(), selection);
+        String conditionUrl = String.format(Locale.US, URL_WEATHER,getAPIKey(), getLanguageCode(),selection);
         String conditionResponse = retrieve(conditionUrl);
         if (conditionResponse == null) {
             return null;
         }
         log(TAG, "Condition URL = " + conditionUrl + " returning a response of " + conditionResponse);
 
-        String forecastUrl = String.format(Locale.US, URL_FORECAST,getAPIKey(), selection);
+        String forecastUrl = String.format(Locale.US, URL_FORECAST,getAPIKey(),getLanguageCode(), selection);
         String forecastResponse = retrieve(forecastUrl);
         if (forecastResponse == null) {
             return null;
@@ -182,6 +182,37 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
         return false;
     }
     
+    private static final HashMap<String, String> LANGUAGE_CODE_MAPPING = new HashMap<String, String>();
+    static {
+        LANGUAGE_CODE_MAPPING.put("bg-", "BU");
+        LANGUAGE_CODE_MAPPING.put("de-", "DL");
+        LANGUAGE_CODE_MAPPING.put("es-", "SP");
+        LANGUAGE_CODE_MAPPING.put("fi-", "FI");
+        LANGUAGE_CODE_MAPPING.put("fr-", "FR");
+        LANGUAGE_CODE_MAPPING.put("it-", "IT");
+        LANGUAGE_CODE_MAPPING.put("nl-", "NL");
+        LANGUAGE_CODE_MAPPING.put("pl-", "PL");
+        LANGUAGE_CODE_MAPPING.put("pt-", "BR");
+        LANGUAGE_CODE_MAPPING.put("ro-", "RO");
+        LANGUAGE_CODE_MAPPING.put("ru-", "RU");
+        LANGUAGE_CODE_MAPPING.put("se-", "SW");
+        LANGUAGE_CODE_MAPPING.put("tr-", "TR");
+        LANGUAGE_CODE_MAPPING.put("uk-", "UA");
+        LANGUAGE_CODE_MAPPING.put("zh-CN", "CN");
+        LANGUAGE_CODE_MAPPING.put("zh-TW", "TW");
+    }
+    
+    private String getLanguageCode() {
+        Locale locale = mContext.getResources().getConfiguration().locale;
+        String selector = locale.getLanguage() + "-" + locale.getCountry();
+
+        for (Map.Entry<String, String> entry : LANGUAGE_CODE_MAPPING.entrySet()) {
+            if (selector.startsWith(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return "EN";
+    }
 
     private int mapConditionIconToCode(String icon) {
 
