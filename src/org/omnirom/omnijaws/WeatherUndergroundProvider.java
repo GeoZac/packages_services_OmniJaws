@@ -34,7 +34,7 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     private static final String URL_LOCATION =
             "http://api.wunderground.com/api/%s/lang:%s/geolookup/q/%s.json";
     private static final String URL_WEATHER =
-            "http://api.wunderground.com/api/%s/lang:%s/conditions%s.json";
+            "http://api.wunderground.com/api/%s/lang:%s/conditions_v11%s.json";
     private static final String URL_FORECAST =
             "http://api.wunderground.com/api/%s/lang:%s/forecast10day%s.json";
 
