@@ -218,63 +218,93 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
 
         switch (icon) {
 
-
             case "tstorms":
+                return 4;     // thunderstorms
             case "nt_tstorms":
-                return 4;   // thunderstorm
+                return 45;    // thundershowers (night)
 
             case "chancetstorms":
-            case "nt_chancetstorms":   // chance of thunderstorm
-                return 37;
+                return 37;    // isolated thunderstorms (day)
+            case "nt_chancetstorms":
+                return 47;    // isolated thundershowers (night)
 
             case "chanceflurries":
+                return 10;     // freezing rain
             case "nt_chanceflurries":
-                return 15;  //  blowing snow
+                return 13;    // snow flurries
 
             case "chancerain":
+                return 40;     // scattered showers (day)
             case "nt_chancerain":
-                return 40;  //  blowing snow
+                return 9;     // drizzle
 
             case "chancesleet":
+                return 5;      // mixed rain and snow
             case "nt_chancesleet":
-                return 8;   //  freezing drizzle
+                return 8;    //  freezing drizzle
 
             case "chancesnow":
+                return 14;    // light snow showers    
             case "nt_chancesnow":
-                return 14;  //  light snow showers
+                return 42;    // scattered snow showers (night)
 
             case "rain":
-                return 11;  //  rain
+            case "nt_rain":
+                return 12;    // showers 
 
             case "snow":
-                return 16;  // snow
+            case "nt_snow":
+                return 16;    // snow
 
             case "sleet":
-                return 18;  // sleet
+                return 18;    // sleet
 
             case "fog":
-                return 20;  // foggy
+                return 19;    // dust
+            case "nt_fog":
+                return 20;    // foggy
 
             case "sunny":
-                return 36;  //  hot
+                return 32;    // sunny (day)
+                                // Well that's just great,can't show a bright 
+            case "nt_sunny":    // sun icon in the night  
+                return 33;    // fair (night) 
 
             case "hazy":
-                return 21;  //  haze
+                return 21;    // haze
+            case "nt_hazy":
+                return 22;    // smoky
 
             case "clear":
-                return 34;  // fair
+                return 34;    // fair (day)
+            case "nt_clear":
+                return 31;    // clear (night)
 
             case "mostlysunny":
-                return 32;  //  sunny
+                return 34;    // fair (day)
+            case "nt_mostlysunny":
+                return 33;    // fair (night)
                 
             case "mostlycloudy":
-                return 28;
+                return 28;    // mostly cloudy (day)
+            case "nt_mostlycloudy":
+                return 27;    // mostly cloudy (night) 
 
-            case "partlycloudy":
-                return 30;
+            case "partlycloudy": //Lets just say 50-50
+            case "partlysunny":
+                return 30;    // partly cloudy (day)
+            case "nt_partlycloudy":
+            case "nt_partlysunny":
+                return 29;    // partly cloudy (night)
 
             case "cloudy":
-                return 26;  //
+                return 26;    // cloudy
+            case "nt_cloudy":
+                return 25;    // cold
+            
+            case "flurries":
+            case "nt_flurries":
+                return 13;    // snow flurries
 
         }
 
