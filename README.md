@@ -34,8 +34,6 @@ Current Status
 -----
 The mapping of condition to the conditionCode is fairly complete
 
-No support for imperial units
-
 Thanks to the original creators and contributors of the LockClock app
 https://github.com/CyanogenMod/android_packages_apps_LockClock
 
