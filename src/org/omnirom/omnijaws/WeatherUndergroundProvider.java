@@ -97,7 +97,6 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     }
 
     private WeatherInfo handleWeatherRequest(String selection, boolean metric) {
-        String units = metric ? "metric" : "imperial";
         String conditionUrl = String.format(Locale.US, URL_WEATHER,getAPIKey(), getLanguageCode(),selection);
         String conditionResponse = retrieve(conditionUrl);
         if (conditionResponse == null) {
@@ -125,9 +124,9 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
                                             weather.getString("city"),
                                             conditions.getString("weather"),
                                             mapConditionIconToCode(conditions.getString("icon")),
-                                            conditions.getInt("temp_c") * 1.0f,
+                                            conditions.getInt(metric ? "temp_c" : "temp_f") * 1.0f,
                                             cleanStrings(conditions.getString("relative_humidity")),
-                                            conditions.getInt("wind_kph")*1.0f,
+                                            conditions.getInt(metric ? "wind_kph" : "wind_mph") * 1.0f,
                                             conditions.getInt("wind_degrees"),
                                             metric,
                                             forecasts,
@@ -146,6 +145,7 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     private ArrayList<DayForecast> parseForecasts(JSONArray forecasts, boolean metric) throws JSONException {
         ArrayList<DayForecast> result = new ArrayList<>();
         int count = forecasts.length();
+        String units = metric ? "celsius" : "fahrenheit";
 
         if (count == 0) {
             throw new JSONException("Empty forecasts array");
@@ -155,8 +155,8 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
             try {
                 JSONObject forecast = forecasts.getJSONObject(i);
                 item = new DayForecast(
-                        Float.valueOf(forecast.getJSONObject("low").getString("celsius")),
-                        Float.valueOf(forecast.getJSONObject("high").getString("celsius")),
+                        Float.valueOf(forecast.getJSONObject("low").getString(units)),
+                        Float.valueOf(forecast.getJSONObject("high").getString(units)),
                         forecast.getString("conditions"),
                         mapConditionIconToCode(forecast.getString("icon")),
                         forecast.getJSONObject("date").getString("epoch"),
