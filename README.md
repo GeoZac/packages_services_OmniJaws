@@ -1,10 +1,15 @@
 About
------
-OmniJaws "Just another weather service"
+
+This is just a fork of AICP's implementation of OmniROMs's OmniJaws which 
 is a minimized service to fetch weather data from OpenWeatherMap or Yahoo.
+This work just extends it to WeatherUnderground service too.
+
+The WeatherUnderground API is fairly accurate (for me,atleast) but the free key has rate limits.
 
 OpenWeatherMap API
 http://openweathermap.org/current
+
+
 
 IMPORTANT: please request your own API key from OpenWeatherMap at
 https://openweathermap.org/appid#get
@@ -13,6 +18,24 @@ https://github.com/omnirom/android_packages_services_OmniJaws/blob/android-8.1/r
 
 Yahoo weather API
 https://developer.yahoo.com/weather/
+
+WeatherUnderground API
+http://api.wunderground.com/weather/api
+
+Very Important
+-----
+This repo doesnt have a WeatherUnderground API key included,so the make sure to get a API key and replace the dummy here
+https://github.com/GeoZac/packages_services_OmniJaws/blob/o8.1/res/values/config.xml
+
+The WeatherUnderground provider is entirely based on the already existing weather providers in orignial project
+
+Current Status
+-----
+The mapping of condition to the conditionCode is fairly complete
+
+No multi-language support
+
+No support for imprial units
 
 Thanks to the original creators and contributors of the LockClock app
 https://github.com/CyanogenMod/android_packages_apps_LockClock

@@ -1,4 +1,4 @@
 <resources>
     <string name="custom_owm_api_key_title">API key</string>
-    <string name="custom_owm_api_key_summary">Enter your own API key from OpenWeatherMap to ensure staying below the request limit</string>
+    <string name="custom_api_key_summary">Enter your own API key from selected provider to ensure staying below the request limit</string>
 </resources>
