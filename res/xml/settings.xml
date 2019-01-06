@@ -63,6 +63,6 @@
     <EditTextPreference
         android:key="custom_owm_api_key"
         android:title="@string/custom_owm_api_key_title"
-        android:summary="@string/custom_owm_api_key_summary" />
+        android:summary="@string/custom_api_key_summary" />
 
 </PreferenceScreen>
