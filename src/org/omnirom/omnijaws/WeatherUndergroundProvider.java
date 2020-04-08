@@ -24,19 +24,19 @@ import org.omnirom.omnijaws.WeatherInfo.DayForecast;
 public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     private static final String TAG = "WeatherUndergroundProvider";
 
-    private static final int FORECAST_DAYS = 5;
-    private static final String SELECTION_LOCATION = "/q/%f,%f";
-    private static final String SELECTION_ID = "%s";
+    private static final int FORECAST_DAYS = 11;    // Forecast is send as parts now , day and night
+    private static final String SELECTION_LOCATION = "geocode=%f,%f";
+    private static final String SELECTION_ID = "placeid=%s";
     private static final String API_KEY = "YOUR_WUG_API_KEY";
     private static final String API_KEY_PREFERENCE = "custom_api_key";
 
 
     private static final String URL_LOCATION =
-            "http://api.wunderground.com/api/%s/lang:%s/geolookup/q/%s.json";
+            "https://api.weather.com/v3/location/search?query=%3$s&language=%2$s&format=json&apiKey=%1$s";
     private static final String URL_WEATHER =
-            "http://api.wunderground.com/api/%s/lang:%s/conditions_v11%s.json";
+            "https://api.weather.com/v3/wx/observations/current?%3$s&units=m&language=%2$s&format=json&apiKey=%1$s";
     private static final String URL_FORECAST =
-            "http://api.wunderground.com/api/%s/lang:%s/forecast10day%s.json";
+            "https://api.weather.com/v3/wx/forecast/daily/5day?%3$s&format=json&units=m&language=%2$s&apiKey=%1$s";
 
     public WeatherUndergroundProvider(Context context) {
         super(context);
@@ -54,29 +54,17 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
         log(TAG, "URL = " + url + " returning a response of " + response);
 
         try {
-            JSONObject jsonObject = new JSONObject(response);
+            JSONObject jsonObject = new JSONObject(response).getJSONObject("location");
             ArrayList<WeatherInfo.WeatherLocation> results = new ArrayList<>();
-            if (jsonObject.optJSONObject("location")!= null) { //this means only one result
-                WeatherInfo.WeatherLocation location = new WeatherInfo.WeatherLocation();
-                JSONObject jsonLocation = new JSONObject(response).getJSONObject("location");
-                location.id = jsonLocation.getString("l");
-                location.city = jsonLocation.getString("city");
-                location.countryId = jsonLocation.getString("country_name");
-                results.add(location);
-
-            }else {
-                JSONArray jsonArray = jsonObject.getJSONObject("response").getJSONArray("results");
-                int count = jsonArray.length();
+                int count = jsonObject.getJSONArray("address").length();
                 for (int i = 0; i < count; i++) {
-                    JSONObject result = jsonArray.getJSONObject(i);
                     WeatherInfo.WeatherLocation location = new WeatherInfo.WeatherLocation();
 
-                    location.id = result.getString("l");
-                    location.city = result.getString("name");
-                    location.countryId = result.getString("country");
+                    location.id = jsonObject.getJSONArray("placeId").getString(i);
+                    location.city = jsonObject.getJSONArray("city").getString(i);
+                    location.countryId = jsonObject.getJSONArray("country").getString(i);
                     results.add(location);
                 }
-            }
             return results;
         } catch (JSONException e) {
             Log.w(TAG, "Received malformed location data (input=" + input + ")", e);
@@ -112,22 +100,20 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
         log(TAG, "Forcast URL = " + forecastUrl + " returning a response of " + forecastResponse);
 
         try {
-            JSONObject conditions = new JSONObject(conditionResponse).getJSONObject("current_observation");
-            
-            JSONObject weather = conditions.getJSONObject("display_location");
+            JSONObject conditions = new JSONObject(conditionResponse);
 
             ArrayList<WeatherInfo.DayForecast> forecasts =
-                    parseForecasts(new JSONObject(forecastResponse).getJSONObject("forecast").getJSONObject("simpleforecast").getJSONArray("forecastday"), metric);
+                    parseForecasts(new JSONObject(forecastResponse), metric);
 
             WeatherInfo w = new WeatherInfo(mContext,
-                                            weather.getString("wmo"),
-                                            weather.getString("city"),
-                                            conditions.getString("weather"),
-                                            mapConditionIconToCode(conditions.getString("icon")),
-                                            conditions.getInt(metric ? "temp_c" : "temp_f") * 1.0f,
-                                            cleanStrings(conditions.getString("relative_humidity")),
-                                            conditions.getInt(metric ? "wind_kph" : "wind_mph") * 1.0f,
-                                            conditions.getInt("wind_degrees"),
+                                            "N/A", // Not supported on current version
+                                            "N/A", // Not supported on current version
+                                            conditions.getString("wxPhraseLong"),
+                                            Integer.parseInt(conditions.getString("iconCode")),
+                                            Float.parseFloat(conditions.getString("temperature")),
+                                            Float.parseFloat(conditions.getString("relativeHumidity")),
+                                            Float.parseFloat(conditions.getString("windSpeed")),
+                                            Integer.parseInt(conditions.getString("windDirection")),
                                             metric,
                                             forecasts,
                                             System.currentTimeMillis());
@@ -142,7 +128,7 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
         return null;
     }
 
-    private ArrayList<DayForecast> parseForecasts(JSONArray forecasts, boolean metric) throws JSONException {
+    private ArrayList<DayForecast> parseForecasts(JSONObject forecasts, boolean metric) throws JSONException {
         ArrayList<DayForecast> result = new ArrayList<>();
         int count = forecasts.length();
         String units = metric ? "celsius" : "fahrenheit";
@@ -150,16 +136,27 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
         if (count == 0) {
             throw new JSONException("Empty forecasts array");
         }
-        for (int i = 0; i < FORECAST_DAYS; i++) {
+        JSONObject dayparts = forecasts.getJSONArray("daypart").getJSONObject(0);
+
+        // Add tonight's forecast
+        result.add(new DayForecast(
+                Float.parseFloat(forecasts.getJSONArray("temperatureMin").get(0).toString()),
+                Float.parseFloat(forecasts.getJSONArray("temperatureMin").get(0).toString()),
+                dayparts.getJSONArray("wxPhraseLong").get(1).toString(),
+                Integer.parseInt(dayparts.getJSONArray("iconCode").get(1).toString()),
+                "NaN",
+                metric));
+
+        // Now deal with days skipping the night data
+        for (int i = 2; i < FORECAST_DAYS; i = i + 2) {
             DayForecast item;
             try {
-                JSONObject forecast = forecasts.getJSONObject(i);
                 item = new DayForecast(
-                        Float.valueOf(forecast.getJSONObject("low").getString(units)),
-                        Float.valueOf(forecast.getJSONObject("high").getString(units)),
-                        forecast.getString("conditions"),
-                        mapConditionIconToCode(forecast.getString("icon")),
-                        forecast.getJSONObject("date").getString("epoch"),
+                        Float.parseFloat(forecasts.getJSONArray("temperatureMin").getString(i / 2)),
+                        Float.parseFloat(forecasts.getJSONArray("temperatureMax").getString(i / 2)),
+                        dayparts.getJSONArray("wxPhraseLong").get(i).toString(),
+                        Integer.parseInt(dayparts.getJSONArray("iconCode").getString(i)),
+                        "NaN",
                         metric);
             } catch (JSONException e) {
                 Log.w(TAG, "Invalid forecast for day " + i + " creating dummy", e);
