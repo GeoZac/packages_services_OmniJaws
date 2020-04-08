@@ -173,150 +173,17 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
         return result;
     }
 
-
     @Override
     public boolean shouldRetry() {
         return false;
     }
-    
-    private static final HashMap<String, String> LANGUAGE_CODE_MAPPING = new HashMap<String, String>();
-    static {
-        LANGUAGE_CODE_MAPPING.put("bg-", "BU");
-        LANGUAGE_CODE_MAPPING.put("de-", "DL");
-        LANGUAGE_CODE_MAPPING.put("es-", "SP");
-        LANGUAGE_CODE_MAPPING.put("fi-", "FI");
-        LANGUAGE_CODE_MAPPING.put("fr-", "FR");
-        LANGUAGE_CODE_MAPPING.put("it-", "IT");
-        LANGUAGE_CODE_MAPPING.put("nl-", "NL");
-        LANGUAGE_CODE_MAPPING.put("pl-", "PL");
-        LANGUAGE_CODE_MAPPING.put("pt-", "BR");
-        LANGUAGE_CODE_MAPPING.put("ro-", "RO");
-        LANGUAGE_CODE_MAPPING.put("ru-", "RU");
-        LANGUAGE_CODE_MAPPING.put("se-", "SW");
-        LANGUAGE_CODE_MAPPING.put("tr-", "TR");
-        LANGUAGE_CODE_MAPPING.put("uk-", "UA");
-        LANGUAGE_CODE_MAPPING.put("zh-CN", "CN");
-        LANGUAGE_CODE_MAPPING.put("zh-TW", "TW");
-    }
-    
+
     private String getLanguageCode() {
         Locale locale = mContext.getResources().getConfiguration().locale;
-        String selector = locale.getLanguage() + "-" + locale.getCountry();
+        return locale.getLanguage() + "-" + locale.getCountry();
 
-        for (Map.Entry<String, String> entry : LANGUAGE_CODE_MAPPING.entrySet()) {
-            if (selector.startsWith(entry.getKey())) {
-                return entry.getValue();
-            }
-        }
-        return "EN";
     }
 
-    private int mapConditionIconToCode(String icon) {
-
-        switch (icon) {
-
-            case "tstorms":
-                return 4;     // thunderstorms
-            case "nt_tstorms":
-                return 45;    // thundershowers (night)
-
-            case "chancetstorms":
-                return 37;    // isolated thunderstorms (day)
-            case "nt_chancetstorms":
-                return 47;    // isolated thundershowers (night)
-
-            case "chanceflurries":
-                return 10;     // freezing rain
-            case "nt_chanceflurries":
-                return 13;    // snow flurries
-
-            case "chancerain":
-                return 40;     // scattered showers (day)
-            case "nt_chancerain":
-                return 9;     // drizzle
-
-            case "chancesleet":
-                return 5;      // mixed rain and snow
-            case "nt_chancesleet":
-                return 8;    //  freezing drizzle
-
-            case "chancesnow":
-                return 14;    // light snow showers    
-            case "nt_chancesnow":
-                return 42;    // scattered snow showers (night)
-
-            case "rain":
-            case "nt_rain":
-                return 12;    // showers 
-
-            case "snow":
-            case "nt_snow":
-                return 16;    // snow
-
-            case "sleet":
-                return 18;    // sleet
-
-            case "fog":
-                return 19;    // dust
-            case "nt_fog":
-                return 20;    // foggy
-
-            case "sunny":
-                return 32;    // sunny (day)
-                                // Well that's just great,can't show a bright 
-            case "nt_sunny":    // sun icon in the night  
-                return 33;    // fair (night) 
-
-            case "hazy":
-                return 21;    // haze
-            case "nt_hazy":
-                return 22;    // smoky
-
-            case "clear":
-                return 34;    // fair (day)
-            case "nt_clear":
-                return 31;    // clear (night)
-
-            case "mostlysunny":
-                return 34;    // fair (day)
-            case "nt_mostlysunny":
-                return 33;    // fair (night)
-                
-            case "mostlycloudy":
-                return 28;    // mostly cloudy (day)
-            case "nt_mostlycloudy":
-                return 27;    // mostly cloudy (night) 
-
-            case "partlycloudy": //Lets just say 50-50
-            case "partlysunny":
-                return 30;    // partly cloudy (day)
-            case "nt_partlycloudy":
-            case "nt_partlysunny":
-                return 29;    // partly cloudy (night)
-
-            case "cloudy":
-                return 26;    // cloudy
-            case "nt_cloudy":
-                return 25;    // cold
-            
-            case "flurries":
-            case "nt_flurries":
-                return 13;    // snow flurries
-
-        }
-
-        return -1;
-    }
-    // Humidity is passed as X%,so strip the percent symbol and and returns the number
-    private float cleanStrings(String string) {
-        float fl= 1.0f;
-        try {
-             fl = Float.valueOf(string.replaceAll("[^\\d.]", ""));
-        }catch (Exception e){
-            Log.w(TAG, "Received malformed data  for humidity" + string , e);
-        }
-        return fl;
-    }
 
     private String getAPIKey() {
         String customKey = PreferenceManager.getDefaultSharedPreferences(mContext)
