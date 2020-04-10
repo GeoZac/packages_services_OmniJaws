@@ -6,20 +6,15 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.omnirom.omnijaws.WeatherInfo.DayForecast;
-
 
 public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     private static final String TAG = "WeatherUndergroundProvider";
@@ -34,9 +29,9 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     private static final String URL_LOCATION =
             "https://api.weather.com/v3/location/search?query=%3$s&language=%2$s&format=json&apiKey=%1$s";
     private static final String URL_WEATHER =
-            "https://api.weather.com/v3/wx/observations/current?%3$s&units=m&language=%2$s&format=json&apiKey=%1$s";
+            "https://api.weather.com/v3/wx/observations/current?%3$s&units=%4$s&language=%2$s&format=json&apiKey=%1$s";
     private static final String URL_FORECAST =
-            "https://api.weather.com/v3/wx/forecast/daily/5day?%3$s&format=json&units=m&language=%2$s&apiKey=%1$s";
+            "https://api.weather.com/v3/wx/forecast/daily/5day?%3$s&units=%4$s&language=%2$s&format=json&apiKey=%1$s";
 
     public WeatherUndergroundProvider(Context context) {
         super(context);
@@ -45,7 +40,7 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     @Override
     public List<WeatherInfo.WeatherLocation> getLocations(String input) {
 
-        String url = String.format(URL_LOCATION,getAPIKey(),getLanguageCode(), Uri.encode(input));
+        String url = String.format(URL_LOCATION, getAPIKey(), getLanguageCode(), Uri.encode(input));
         String response = retrieve(url);
         if (response == null) {
             return null;
@@ -56,15 +51,15 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
         try {
             JSONObject jsonObject = new JSONObject(response).getJSONObject("location");
             ArrayList<WeatherInfo.WeatherLocation> results = new ArrayList<>();
-                int count = jsonObject.getJSONArray("address").length();
-                for (int i = 0; i < count; i++) {
-                    WeatherInfo.WeatherLocation location = new WeatherInfo.WeatherLocation();
+            int count = jsonObject.getJSONArray("address").length();
+            for (int i = 0; i < count; i++) {
+                WeatherInfo.WeatherLocation location = new WeatherInfo.WeatherLocation();
 
-                    location.id = jsonObject.getJSONArray("placeId").getString(i);
-                    location.city = jsonObject.getJSONArray("city").getString(i);
-                    location.countryId = jsonObject.getJSONArray("country").getString(i);
-                    results.add(location);
-                }
+                location.id = jsonObject.getJSONArray("placeId").getString(i);
+                location.city = jsonObject.getJSONArray("city").getString(i);
+                location.countryId = jsonObject.getJSONArray("country").getString(i);
+                results.add(location);
+            }
             return results;
         } catch (JSONException e) {
             Log.w(TAG, "Received malformed location data (input=" + input + ")", e);
@@ -85,14 +80,16 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     }
 
     private WeatherInfo handleWeatherRequest(String selection, boolean metric) {
-        String conditionUrl = String.format(Locale.US, URL_WEATHER,getAPIKey(), getLanguageCode(),selection);
+
+        String units = metric ? "m" : "e";
+        String conditionUrl = String.format(Locale.US, URL_WEATHER, getAPIKey(), getLanguageCode(), selection, units);
         String conditionResponse = retrieve(conditionUrl);
         if (conditionResponse == null) {
             return null;
         }
         log(TAG, "Condition URL = " + conditionUrl + " returning a response of " + conditionResponse);
 
-        String forecastUrl = String.format(Locale.US, URL_FORECAST,getAPIKey(),getLanguageCode(), selection);
+        String forecastUrl = String.format(Locale.US, URL_FORECAST, getAPIKey(), getLanguageCode(), selection, units);
         String forecastResponse = retrieve(forecastUrl);
         if (forecastResponse == null) {
             return null;
@@ -106,17 +103,17 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
                     parseForecasts(new JSONObject(forecastResponse), metric);
 
             WeatherInfo w = new WeatherInfo(mContext,
-                                            "N/A", // Not supported on current version
-                                            "N/A", // Not supported on current version
-                                            conditions.getString("wxPhraseLong"),
-                                            Integer.parseInt(conditions.getString("iconCode")),
-                                            Float.parseFloat(conditions.getString("temperature")),
-                                            Float.parseFloat(conditions.getString("relativeHumidity")),
-                                            Float.parseFloat(conditions.getString("windSpeed")),
-                                            Integer.parseInt(conditions.getString("windDirection")),
-                                            metric,
-                                            forecasts,
-                                            System.currentTimeMillis());
+                    "N/A", // Not supported on current version
+                    "N/A", // Not supported on current version
+                    conditions.getString("wxPhraseLong"),
+                    Integer.parseInt(conditions.getString("iconCode")),
+                    Float.parseFloat(conditions.getString("temperature")),
+                    Float.parseFloat(conditions.getString("relativeHumidity")),
+                    Float.parseFloat(conditions.getString("windSpeed")),
+                    Integer.parseInt(conditions.getString("windDirection")),
+                    metric,
+                    forecasts,
+                    System.currentTimeMillis());
 
             log(TAG, "Weather updated: " + w);
             return w;
@@ -131,7 +128,6 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     private ArrayList<DayForecast> parseForecasts(JSONObject forecasts, boolean metric) throws JSONException {
         ArrayList<DayForecast> result = new ArrayList<>();
         int count = forecasts.length();
-        String units = metric ? "celsius" : "fahrenheit";
 
         if (count == 0) {
             throw new JSONException("Empty forecasts array");
@@ -181,14 +177,13 @@ public class WeatherUndergroundProvider extends AbstractWeatherProvider {
     private String getLanguageCode() {
         Locale locale = mContext.getResources().getConfiguration().locale;
         return locale.getLanguage() + "-" + locale.getCountry();
-
     }
 
 
     private String getAPIKey() {
         String customKey = PreferenceManager.getDefaultSharedPreferences(mContext)
                 .getString(API_KEY_PREFERENCE, "");
-        if (TextUtils.isEmpty(customKey) && customKey.length()!= 16) {
+        if (TextUtils.isEmpty(customKey) && customKey.length()!= 32) {
             return mContext.getResources().getString(R.string.wug_api_key, API_KEY);
         } else {
             return customKey;
