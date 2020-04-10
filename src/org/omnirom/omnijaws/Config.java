@@ -49,6 +49,8 @@ public class Config {
                 return new METNorwayProvider(context);
             case "2":
                 return new WeatherUndergroundProvider(context);
+            case "3":
+                return new AerisWeatherProvider(context);
             default:
                 return new OpenWeatherMapProvider(context);
         }
@@ -67,6 +69,8 @@ public class Config {
                 return "MET Norway";
             case "2":
                 return "Weather Underground";
+            case "3":
+                return "Aeris Weather";
             default:
                 return "OpenWeatherMap";
         }
