@@ -266,9 +266,10 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
         String dayShort = sdf.format(new Date(cal.getTimeInMillis()));
 
         Drawable d = weatherClient.getWeatherConditionImage(weatherData.forecasts.get(0).conditionCode);
-        BitmapDrawable bd = overlay(context.getResources(), d, weatherData.forecasts.get(0).low, weatherData.forecasts.get(0).high,
-                weatherData.tempUnits);
+        BitmapDrawable bd = overlay(context.getResources(), d);
         widget.setImageViewBitmap(R.id.forecast_image_0, bd.getBitmap());
+        widget.setTextViewText(R.id.forecast_temp_0, formatTempString(weatherData.forecasts.get(0).low, 
+            weatherData.forecasts.get(0).high, weatherData.tempUnits));
         widget.setTextViewText(R.id.forecast_text_0, dayShort);
         widget.setViewVisibility(R.id.forecast_text_0, showDays ? View.VISIBLE : View.GONE);
         widget.setViewVisibility(R.id.forecast_0, withForcast ? View.VISIBLE : View.GONE);
@@ -277,9 +278,10 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
         dayShort = sdf.format(new Date(cal.getTimeInMillis()));
 
         d = weatherClient.getWeatherConditionImage(weatherData.forecasts.get(1).conditionCode);
-        bd = overlay(context.getResources(), d, weatherData.forecasts.get(1).low, weatherData.forecasts.get(1).high,
-                weatherData.tempUnits);
+        bd = overlay(context.getResources(), d);
         widget.setImageViewBitmap(R.id.forecast_image_1, bd.getBitmap());
+        widget.setTextViewText(R.id.forecast_temp_1, formatTempString(weatherData.forecasts.get(1).low, 
+            weatherData.forecasts.get(1).high, weatherData.tempUnits));
         widget.setTextViewText(R.id.forecast_text_1, dayShort);
         widget.setViewVisibility(R.id.forecast_text_1, showDays ? View.VISIBLE : View.GONE);
         widget.setViewVisibility(R.id.forecast_1, withForcast ? View.VISIBLE : View.GONE);
@@ -288,9 +290,10 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
         dayShort = sdf.format(new Date(cal.getTimeInMillis()));
 
         d = weatherClient.getWeatherConditionImage(weatherData.forecasts.get(2).conditionCode);
-        bd = overlay(context.getResources(), d, weatherData.forecasts.get(2).low, weatherData.forecasts.get(2).high,
-                weatherData.tempUnits);
+        bd = overlay(context.getResources(), d);
         widget.setImageViewBitmap(R.id.forecast_image_2, bd.getBitmap());
+        widget.setTextViewText(R.id.forecast_temp_2, formatTempString(weatherData.forecasts.get(2).low, 
+            weatherData.forecasts.get(2).high, weatherData.tempUnits));
         widget.setTextViewText(R.id.forecast_text_2, dayShort);
         widget.setViewVisibility(R.id.forecast_text_2, showDays ? View.VISIBLE : View.GONE);
         widget.setViewVisibility(R.id.forecast_2, withForcast ? View.VISIBLE : View.GONE);
@@ -299,9 +302,10 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
         dayShort = sdf.format(new Date(cal.getTimeInMillis()));
 
         d = weatherClient.getWeatherConditionImage(weatherData.forecasts.get(3).conditionCode);
-        bd = overlay(context.getResources(), d, weatherData.forecasts.get(3).low, weatherData.forecasts.get(3).high,
-                weatherData.tempUnits);
+        bd = overlay(context.getResources(), d);
         widget.setImageViewBitmap(R.id.forecast_image_3, bd.getBitmap());
+        widget.setTextViewText(R.id.forecast_temp_3, formatTempString(weatherData.forecasts.get(3).low, 
+            weatherData.forecasts.get(3).high, weatherData.tempUnits));
         widget.setTextViewText(R.id.forecast_text_3, dayShort);
         widget.setViewVisibility(R.id.forecast_text_3, showDays ? View.VISIBLE : View.GONE);
         widget.setViewVisibility(R.id.forecast_3, withForcast ? View.VISIBLE : View.GONE);
@@ -310,16 +314,18 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
         dayShort = sdf.format(new Date(cal.getTimeInMillis()));
 
         d = weatherClient.getWeatherConditionImage(weatherData.forecasts.get(4).conditionCode);
-        bd = overlay(context.getResources(), d, weatherData.forecasts.get(4).low, weatherData.forecasts.get(4).high,
-                weatherData.tempUnits);
+        bd = overlay(context.getResources(), d);
         widget.setImageViewBitmap(R.id.forecast_image_4, bd.getBitmap());
+        widget.setTextViewText(R.id.forecast_temp_4, formatTempString(weatherData.forecasts.get(4).low, 
+            weatherData.forecasts.get(4).high, weatherData.tempUnits));
         widget.setTextViewText(R.id.forecast_text_4, dayShort);
         widget.setViewVisibility(R.id.forecast_text_4, showDays ? View.VISIBLE : View.GONE);
         widget.setViewVisibility(R.id.forecast_4, withForcast ? View.VISIBLE : View.GONE);
 
         d = weatherClient.getWeatherConditionImage(weatherData.conditionCode);
-        bd = overlay(context.getResources(), d, weatherData.temp, null, weatherData.tempUnits);
+        bd = overlay(context.getResources(), d);
         widget.setImageViewBitmap(R.id.current_image, bd.getBitmap());
+        widget.setTextViewText(R.id.current_temp, formatTempString(weatherData.temp, null, weatherData.tempUnits));
         widget.setTextViewText(R.id.current_text, context.getResources().getText(R.string.omnijaws_current_text));
         widget.setViewVisibility(R.id.current_text, showDays ? View.VISIBLE : View.GONE);
 
@@ -383,41 +389,20 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
         widget.setViewVisibility(R.id.refresh, View.VISIBLE);
     }
 
-    private static BitmapDrawable overlay(Resources resources, Drawable image, String min, String max, String tempUnits) {
+    private static BitmapDrawable overlay(Resources resources, Drawable image) {
         if (image instanceof VectorDrawable) {
             image = applyTint(image);
         }
         final Canvas canvas = new Canvas();
         canvas.setDrawFilter(new PaintFlagsDrawFilter(Paint.ANTI_ALIAS_FLAG,
                 Paint.FILTER_BITMAP_FLAG));
-        final float density = resources.getDisplayMetrics().density;
-        final int footerHeight = Math.round(18 * density);
-        final int imageWidth = image.getIntrinsicWidth();
-        final int imageHeight = image.getIntrinsicHeight();
-        final TextPaint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        Typeface font = Typeface.create("@*android:string/config_bodyFontFamily", Typeface.NORMAL);
-        textPaint.setTypeface(font);
-        textPaint.setColor(resources.getColor(R.color.widget_text_color));
-        textPaint.setTextAlign(Paint.Align.LEFT);
-        final int textSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14f, resources.getDisplayMetrics());
-        textPaint.setTextSize(textSize);
-        final int height = imageHeight + footerHeight;
-        final int width = imageWidth;
+        final int height = image.getIntrinsicHeight();
+        final int width = image.getIntrinsicWidth();;
 
         final Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         canvas.setBitmap(bmp);
-        image.setBounds(0, 0, imageWidth, imageHeight);
+        image.setBounds(0, 0, width, height);
         image.draw(canvas);
-
-        String str = null;
-        if (max != null) {
-            str = min + "/" + max + tempUnits;
-        } else {
-            str = min + tempUnits;
-        }
-        Rect bounds = new Rect();
-        textPaint.getTextBounds(str, 0, str.length(), bounds);
-        canvas.drawText(str, width / 2 - bounds.width() / 2, height - textSize / 2, textPaint);
 
         return shadow(resources, bmp);
     }
@@ -479,5 +464,15 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
         canvas.drawBitmap(b, 0, 0, null);
 
         return new BitmapDrawable(resources, bmResult);
+    }
+
+    private static String formatTempString(String min, String max, String tempUnits) {
+        String str = null;
+        if (max != null) {
+            str = min + "/" + max + tempUnits;
+        } else {
+            str = min + tempUnits;
+        }
+        return str;
     }
 }
